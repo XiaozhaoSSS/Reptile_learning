@@ -19,15 +19,18 @@ def get_data(url):
     barranges_list=[]
     r=requests.get(url,timeout=15)
     r.raise_for_status()
+    #r.encoding ='utf-8'
     r.encoding=r.apparent_encoding
 
     soup=BeautifulSoup(r.text,'lxml')
     barranges=soup.find_all('d')
     for barrange in barranges:
         barranges_list.append(barrange.text)
+    print(barranges_list)
 
-    with open('barranges.txt','w') as f:
+    with open('barranges.txt','w',encoding='utf-8') as f:
         f.write('\n'.join(barranges_list))
+
     return barranges_list
 
 def removal(barranges):
@@ -47,9 +50,9 @@ def removal(barranges):
         else:
             repeat_list.append(barrange)
 
-    with open('results.txt','w') as results:
+    with open('results.txt','w',encoding='utf-8') as results:
         results.write('\n'.join(results_list))
-    with open('repeat.txt','w') as repeat:
+    with open('repeat.txt','w',encoding='utf-8') as repeat:
         repeat.write('\n'.join(repeat_list))
 
     return results_list,repeat_list
@@ -75,7 +78,7 @@ def make_wordCould(barranges_list):
     return words
 
 print('请输入想要爬取的弹幕链接')
-url=input() or 'https://api.bilibili.com/x/v1/dm/list.so?oid=112467603'
+url=input()
 barranges_list = get_data(url)
 results_list,repeat_list = removal(barranges_list)
 words=make_wordCould(barranges_list)
@@ -87,3 +90,13 @@ words_num_dict={'words_num':words_num.index,'num':words_num.values}
 words_num_pd = pd.DataFrame(words_num_dict)
 words_num_pd.to_csv('words_num.txt')
 
+#去掉只有1个字符的词
+words_list_long=[]
+for words in words_list:
+    if len(words)>1:
+        words_list_long.append(words)
+words_num_long = pd.value_counts(words_list_long)
+
+words_num_dict_long={'words_num':words_num_long.index,'num':words_num_long.values}
+words_num_pd_long = pd.DataFrame(words_num_dict_long)
+words_num_pd_long.to_csv('words_num_long.txt')
